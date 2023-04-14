@@ -107,7 +107,10 @@ app.use("/admin",admin);
 
 app.use("/login",login);
 
+
 app.use("/signup",signup);
+
+app.use("/seller",seller);
 
 app.post("/verifyMail", function(req, res){
     const {token}=req.body;
@@ -123,12 +126,15 @@ app.post("/verifyMail", function(req, res){
     });
 
 })
-app.use("/seller",seller);
 
 
-app.get("/sellerProducts",(req,res)=>{
-    getSeller(null,req.session.user.username,(err,data)=>{
-        res.json(data);
+
+app.post("/sellerProducts",(req,res)=>{
+    getSeller(null,req.body.user,(err,data)=>{
+        if(err){
+            res.status(500).json("error");
+        }
+        res.status(200).json(data);
     });
 })
 
@@ -146,7 +152,11 @@ app.use("/sellerNewProduct",sellerNewProduct);
 
 app.post("/updateProduct",(req,res)=>{
     let product=req.body;
-    updateProduct(product);
+    
+    updateProduct(product,(err,r)=>{
+        if(err) return res.status(500).json("Error");
+        return res.status(200).json("scucess")
+    });
 })
 
 app.use("/changePass",changePass);
@@ -190,7 +200,11 @@ app.use("/minus",minus)
 
 app.post("/deleteProduct",(req,res)=>{
     let id=req.body.id;
-    deleteProduct(id);
+    deleteProduct(id,(err,r)=>{
+        if(err) return res.status(500).json("Error")
+        
+        return res.status(200).json("success")
+    });
 })
 
 app.use("/deleteOrder",del);

@@ -2,12 +2,11 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
-import {useNavigate,Link} from "react-router-dom";
+import {Link} from "react-router-dom";
 
 
 function NavScrollExample({logout}) {
-  const navigate  = useNavigate();
-
+  
   const deleteToken= ()=>{
     localStorage.removeItem("token");
     logout();

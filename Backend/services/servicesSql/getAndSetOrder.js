@@ -6,7 +6,7 @@ const getAndSetOrder=async (product,user,arr,callback)=>{
             if(product){
                 await Orders.getClient().query('BEGIN');
         
-                await Orders.getClient().query(`update products set quantity=quantity-'${product.quantity}' where product_id='${product.id}'`);
+                await Orders.getClient().query(`update products set quantity=quantity-'${product.quantity}' where product_id='${product.product_id}'`);
                 
                 let id=await Orders.getClient().query(`insert into orders(user_id,seller_id,product_id,quantity,address,city,pincode)
                 values('${user}','${product.seller}','${product.product_id}','${product.quantity}','23 A/4k','alld',211016) RETURNING order_id`);

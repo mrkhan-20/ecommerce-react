@@ -6,11 +6,10 @@ import About from '../../components/about us/about';
 
 
 export default  function Home({logout,user}){
-    console.log(user)
     return(
         <>
           <>
-            <Navbar logout={logout}/>
+            <Navbar logout={logout} />
             <Crousal/>
             <Cards user={user} itemsPerPage={5}/>
             <About/>

@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 
 function checkauth(req,res,next){
-  console.log(req.body)
     jwt.verify(req.body.token, 'secret-key', (err, decodedToken) => {
         if (err) {
           return res.status(403).json({ message: 'Invalid token' });

@@ -1,47 +1,48 @@
 const express=require("express");
-const seller=require("../services/servicesSql/getSeller");
 const sellerOrders=require("../services/servicesSql/sellerOrders");
 const Orders=require("../services/servicesSql/sqlConnection");
 const sendDeletemail=require("../services/servicesMongo/sendDeletemail.js");
 
-const router=express.Router();
+const router=express.Router(); 
 
-router.get("/",(req,res)=>{
-    if(req.session.islog && req.session.user.varified){
-        if(!req.session.user.isseller){
-            res.redirect("/home")
+router.post("/ordersList",(req,res)=>{
+    let user=req.body.user;
+    let result=[];
+    
+    sellerOrders(user,(err,data,data1)=>{
+        if(err){
+            res.status(500).json("erro");
         }
-        seller(null,req.session.user.username,(err,data)=>{
-            res.render("seller",{user:req.session.user,error:""});
+        data.map((item)=>{
+            data1.map((val,i)=>{
+              if(val.product_id === item.product_id){
+                  let temp={
+                      product_id:val.product_id,
+                      name:val.name,
+                      description:val.description,
+                      order_id:item.order_id,
+                      quantity:item.quantity,
+                      price:val.price,
+                      user:item.user_id
+                  }
+                  result.push(temp);
+              }
+               
+            })
         })
-    }
-    else{
-        res.redirect("/home");
-    }
-
-});
-
-router.get("/ordersList",(req,res)=>{
-    if(req.session.islog && req.session.user.varified){
-        sellerOrders(req.session.user.username,(err,data,data1)=>{
-            if(err){
-                res.render("ordersList",{user:req.session.user,error:"something went wrong",order:"",product:""});
-            }
-            res.render("ordersList",{user:req.session.user,error:"",order:data,product:data1});
-        })
-    }
-    else{
-        res.redirect("/home");
-    }
+        res.status(200).json(result)
+    })
+    
 })
 router.post("/deleteBySeller",async (req,res)=>{
     let id=req.body.id;
-    if(req.session.user){
-        await Orders.getClient().query(`delete from orders where order_id='${id}'`,async (err,response)=>{
-            sendDeletemail(req.session.user.email);
-        });
+    await Orders.getClient().query(`delete from orders where order_id='${id}'`,async (err,response)=>{
+        if(err) res.status(500).json("err")
         
-    }
+        res.status(200).json("sucess")
+    });
+        
+
     return;
 })
 module.exports=router;

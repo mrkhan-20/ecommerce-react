@@ -11,6 +11,7 @@ function NavScrollExample({logout}) {
   const deleteToken= ()=>{
     localStorage.removeItem("token");
     logout();
+   
   }
 
  
@@ -26,10 +27,9 @@ function NavScrollExample({logout}) {
             navbarScroll
           >
             <Link to="/" style={{ color:"#bdc8c9",padding:"10px"}}>Home</Link>
-            <NavDropdown title="Cart/Ordes" id="navbarScrollingDropdown">
-              <NavDropdown.Item as={Link} to="/cart">My Cart</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/order">My Orders</NavDropdown.Item>
-            </NavDropdown>
+            <Link to="/cart" style={{ color:"#bdc8c9",padding:"10px"}}>My Cart</Link>
+            <Link to="/order" style={{ color:"#bdc8c9",padding:"10px"}}>My Order</Link>
+
             
           </Nav>
           <Nav style={{paddingRight:"7rem"}}>

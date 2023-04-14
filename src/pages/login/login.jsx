@@ -5,7 +5,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 
 
-const Login = ({setLogin,setSeller}) => {
+const Login = ({setLogin}) => {
   const [er,seter]=useState('');
   const navigate  = useNavigate();
   const initialValues = {
@@ -22,11 +22,15 @@ const Login = ({setLogin,setSeller}) => {
           seter('');
           let t=res.data.token;
           let u=values.username
-          localStorage.setItem('token', JSON.stringify({token:t,username:u}));
-          setLogin();
           if(res.data.user=="Seller"){
-            setSeller();
+            localStorage.setItem('token', JSON.stringify({token:t,username:u,seller:true}));
           }
+          else{
+            localStorage.setItem('token', JSON.stringify({token:t,username:u,seller:false}));
+
+          }
+          setLogin();
+
         } catch (e) {
           console.log(e)
           if(e.code=='ERR_NETWORK'){
@@ -58,7 +62,7 @@ const Login = ({setLogin,setSeller}) => {
               type="username"
               className="form-control"
               name="username"
-              placeholder="username"
+              placeholder="Username"
               value={values.username}
               onChange={handleChange}
               onBlur={handleBlur}

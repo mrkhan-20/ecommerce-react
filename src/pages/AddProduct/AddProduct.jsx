@@ -97,7 +97,7 @@ function Admin({logout}) {
     }
   return (
     <>
-    <Navbar logout={logout}/>
+    <Navbar logout={logout} />
     <div  className='d-flex flex-column justify-content-center align-items-center mt-4 '>
         <div className="row adminform">
             <div className="col-6">
