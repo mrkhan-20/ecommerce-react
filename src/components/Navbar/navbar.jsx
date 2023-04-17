@@ -32,9 +32,9 @@ function NavScrollExample({logout}) {
 
             
           </Nav>
-          <Nav style={{paddingRight:"7rem"}}>
+          <Nav style={{paddingRight:"7.6rem"}}>
           <NavDropdown title={<i className="fa fa-user"></i>} id="navbarScrollingDropdown" className="dropdown-menu-right">
-              <NavDropdown.Item as={Link} to="/">Profile</NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/changepass">ChangePassword</NavDropdown.Item>
               <NavDropdown.Item onClick={deleteToken} as={Link} to="/login">Logout</NavDropdown.Item>
             </NavDropdown>
           </Nav>

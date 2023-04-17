@@ -8,6 +8,7 @@ import Login from './pages/login/login'
 import AddProduct from './pages/AddProduct/AddProduct'
 import Seller from './pages/seller/seller'
 import SellerOrder from './pages/seller/order'
+import ChangePassword from './pages/ChangePassword/changepass'
 
 import Order from './pages/orders/order'
 
@@ -112,6 +113,7 @@ export default  function App(){
                 <Route exact path="/" element={<Seller logout={logout}  user={user}/>}/>
                 <Route exact path="/order" element={<SellerOrder logout={logout}  user={user}/>}/>
                 <Route exact path="/addproduct" element={<AddProduct logout={logout}  user={user}/>}/>
+                <Route exact path="/changepass" element={<ChangePassword user={user}/>}/>
                 <Route path='*' element={<Navigate to='/' />} />
             </>
             :isLoggedIn && !seller?
@@ -119,6 +121,7 @@ export default  function App(){
              <Route exact path="/" element={<Home logout={logout} user={user}/>} />
              <Route exact path="/cart" element={<Cart logout={logout} user={user}/>}/>
              <Route exact path="/order" element={<Order logout={logout} user={user}/>}/>
+             <Route exact path="/changepass" element={<ChangePassword user={user}/>}/>
              <Route path='*' element={<Navigate to='/' />} />
              </>
             :checking ? <Route path='*' element={<Check/>} />:

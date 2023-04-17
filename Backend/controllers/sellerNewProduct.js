@@ -11,46 +11,26 @@ const get=(req,res)=>{
      res.redirect("/home")
 }
 const post=(req,res)=>{
-    if(req.file==null){
-        res.render("seller",{user:req.session.user,error:"One or more field is empty"});
-        return;
-    }
+    let product=req.body.details
+
     let pr={
-        "name": req.body.name,
-        "description": req.body.description,
-        "price":req.body.price,
-        "file":req.file.filename,
-        "seller":req.body.seller,
-        "quantity":req.body.quantity
+        "name": product.name,
+        "description": product.description,
+        "price":product.price,
+        "file":req.body.downloadURL,
+        "seller":req.body.user,
+        "quantity":product.quantity
     }
-    if(req.file.size>250000){
-        res.render("seller",{user:req.session.user,error:"Image should be less than 250kb"});
-        return;
-    }
-    console.log(pr)
-    let p=[];
-    if(req.session.user){
-        seller(null,req.session.user.username,(err,data)=>{
-            if(err){
-                res.render("seller",{user:req.session.user,error:"something went wrong"});
-                return;
-            }
-            if(data.length>0 ){
-                p=data;
-            }
-            seller(pr,req.session.user.username,(err,data)=>{
-                if(err) {
-                    res.render("seller",{user:req.session.user,error:"something went wrong"});
-                    return;
-                }
     
-               
-            })
-            res.render("seller",{user:req.session.user,error:""});
-        })
-        return;
-    }
-    res.redirect("/seller")
+    seller(pr,req.body.user,(err,data)=>{
+        if(err) {
+            res.status(500).json("error");
+            return;
+        }
+        res.status(200).json("success");
+
+    })
+   
 }
 
 module.exports={get:get,post:post};

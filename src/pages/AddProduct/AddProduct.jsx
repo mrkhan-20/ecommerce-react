@@ -1,155 +1,142 @@
 import React, { useState,useRef } from 'react';
 import Navbar from '../seller/navbar';
 import './AddProduct.css'
+import app from './firebase'
+import axios from 'axios'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-function Admin({logout}) {
-    
+function AddProduct({logout,user}) {
+    const [err,setErr]=useState('')
+    const [Suc,setSuc]=useState('')
+
     const [details,setDetails]=useState({
       name:"",
       price:"",
-      des:"",
-      img:"",
+      description:"",
+      quantity:"",
+      product_id:""
     });
-    const [index,setIndex]=useState(-1);
-    const inputRef = useRef(null);
+    const inputRef = useRef(null); 
 
-    const [todo,setTodo]=useState([]);
 
 
     function addvalue(e){
       const val=e.target.value;
       const name=e.target.name;
 
-      setDetails((prev)=>{
-        if(name=="name"){
-          return {
-            name:val,
-            price:prev.price,
-            des:prev.des,
-            img:prev.img,
-          }
+        if(name=="img"){
+          setDetails((prev)=>{
+            return {
+              name:prev.name,
+              price:prev.price,
+              description:prev.description,
+              quantity:prev.quantity,
+              product_id:e.target.files[0],
+            }
+          })
         }
-        else if(name=="price"){
-          return {
-            name:prev.name,
-            price:val,
-            des:prev.des,
-            img:prev.img,
-          }
+        else {
+
+          setDetails((prev)=>{
+            return{
+              ...prev,
+              [name]:val
+            }
+          })
         }
-        else if(name=="des"){
-          return {
-            name:prev.name,
-            price:prev.price,
-            des:val,
-            img:prev.img,
-          }
-        }
-        else if(name=="img"){
-          return {
-            name:prev.name,
-            price:prev.price,
-            des:prev.des,
-            img:URL.createObjectURL(e.target.files[0]),
-          }
-        }
-      })
+    
      
     }
 
    
-    function addTodo(){
-        if(index!=-1){
-          todo[index].name=details.name;
-          todo[index].des=details.des;
-          todo[index].price=details.price;
-          todo[index].img=details.img;
-          setTodo([...todo])
-          
+    function add(e){
+      e.preventDefault();
+
+      const fileName = new Date().getTime() + details.product_id.name;
+      const storage = getStorage(app);
+      const StorageRef = ref(storage , fileName);
+      const uploadTask = uploadBytesResumable(StorageRef, details.product_id);
+
+      uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            setSuc('Image Upload is paused')
+            break;
+          case 'running':
+            console.log('Upload is running');
+            setSuc('Image Upload is running')
+            break;
         }
-        else{
-          setTodo([...todo,details])
-        }
-      console.log(details)
-        setIndex(-1);
-        setDetails({
-          name:"",
-          price:"",
-          des:"",
-          img:"",
+      }, 
+      (error) => {
+        setErr("Couldn't upload file");
+        
+      }, 
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
+          try{
+            const res=await axios.post('http://localhost:3000/sellerNewProduct',{details,user,downloadURL})
+
+            setSuc("Product Uploaded Successfully");
+            setDetails({
+              name:"",
+              price:"",
+              description:"",
+              quantity:"",
+              product_id:""
+            });
+            inputRef.current.value = null;
+    
+          }
+          catch(error){
+            console.log(error)
+            setErr("Error from server");
+
+          }
+          })
         });
-        inputRef.current.value = null;
+
     }
 
-    function update(i){
-        setDetails({
-          name:todo[i].name,
-          price:todo[i].price,
-          des:todo[i].des,
-        
-        })
-        setIndex(i);
-    }
-    function deleteROw(index){
-        setTodo(todo.filter((val,i)=>{
-          return i!=index;
-        }))
-    }
+    
   return (
     <>
     <Navbar logout={logout} />
     <div  className='d-flex flex-column justify-content-center align-items-center mt-4 '>
+
+    <form className='d-flex flex-column justify-content-center align-items-center' onSubmit={add} >
         <div className="row adminform">
             <div className="col-6">
-                <input type="text" value={details.name} className="round" name="name" onChange={addvalue} /><br />
-                <input type="text" value={details.price} className="round" name="price" onChange={addvalue} /><br />
-                <input type="text" value={details.des} className="round" name="des" onChange={addvalue} />
-                <input type="file" ref={inputRef} accept="image/*" name="img" onChange={addvalue} />
+                <input type="text" value={details.name} className="round" name="name" onChange={addvalue} required/><br />
+                <input type="text" value={details.price} className="round" name="price" onChange={addvalue} required/><br />
+                <input type="text" value={details.quantity} className="round" name="quantity" onChange={addvalue} required/><br />
+                <input type="text" value={details.description} className="round" name="description" onChange={addvalue} required/>
+                <input type="file" ref={inputRef} accept="image/*" name="img" onChange={addvalue} required/>
             </div>
             <div className="col-6">
                  <label className="form-label" htmlFor="form1Example1">Product Name</label><br />
                  <label className="form-label" htmlFor="form1Example1">Product Price</label><br />
-                 <label className="form-label" htmlFor="form1Example1">Product Decription</label>
+                 <label className="form-label" htmlFor="form1Example1">Product Quantity</label>
+                 <label className="form-label" htmlFor="form1Example1">Product Description</label>
+
             </div>
             <div className="row " >
-               <button type="submit" className="btn btn-primary btn-block add" onClick={addTodo}>Add Product</button>
+               <button type="submit" className="btn btn-primary btn-block add" >Add Product</button>
             </div>
         </div>
        
+    </form>
       </div>
       <hr />
-    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 ml-2 mt-4 p-4 w-100 d-flex justify-content-center">
-          {
-            todo.map((val,index)=>{
-              return(
-                     <div className="col" key={index}>
-                        <div className="card">
-                            <img
-                            src={val.img}
-                            className="card-img-top imgcss"
-                            />
-                            <div className="card-body">
-                            <div className='d-flex justify-content-between md-2'>
-                                <h5 className="card-title">{val.name}</h5>
-                                <h6>Price : ${val.price} </h6>
-                            </div>
-                            <p className="card-text">
-                                 {val.des}
-                            </p>
-                            <div className='d-flex justify-content-around'>
-                                <button className='btn btn-warning ' onClick={()=>update(index)}>Update</button>
-                                <button className='btn btn-danger' onClick={()=>deleteROw(index)}>Delete</button>
-                            </div>
-                            </div>
-                          </div>
-                        </div>
-              )
-            })
-          }
-        </div>
-         
+    {Suc?
+      <div className="d-flex justify-content-center"><h4 style={{fontStyle:"italic",color:"lightgreen"}}>{Suc}</h4></div>
+    :<div className="d-flex justify-content-center"><h4 style={{fontStyle:"italic",color:"red"}}>{err}</h4></div>}
     </>
   );
 }
 
-export default Admin;
+export default AddProduct;

@@ -3,7 +3,7 @@ const getAndSetOrder=require("../services/servicesSql/getAndSetOrder");
 const router=express.Router();
 const Orders=require("../services/servicesSql/sqlConnection");
 const Razorpay = require('razorpay');
-var instance = new Razorpay({ key_id: 'rzp_test_EBK6wY0vXIAoeX', key_secret: '3gef0uJYu6twtJcnNt5reVgf' })
+var instance = new Razorpay({ key_id: 'rzp_test_VAv2jA9rlvknap', key_secret: 'RFfnCXI3oCgzlG4swEoy5dGL' })
 
 let arr=[];
 
@@ -32,27 +32,30 @@ router.post("/checkoutPayment",async (req,res)=>{
     };
     instance.orders.create(options, function(err, order) {
         if(err){
-            console.log(err);
-            return;
+             return res.status(500).json("Eroor")
         }
-        res.status(201).json({order})
+        return res.status(201).json({order})
     });
-    return;
+     
 })
 
 
 router.post("/payment",async (req,res)=>{
-    let paymentId=req.body.id.payment;
+    let paymentId=req.body.razorpayPaymentId;
     for (let i = 0; i < arr.length; i++) {
         await Orders.getClient().query(`update orders set payment_id='${paymentId}' where order_id='${arr[i]}'`);
-    }  
+    }
+    arr=[];
+    return res.status(200).json("success")
 })
 
 router.post("/delete",async (req,res)=>{
-    console.log(arr)
     for (let i = 0; i < arr.length; i++) {
         await Orders.getClient().query(`delete from orders where order_id='${arr[i]}'`);
     }  
+    arr=[];
+    return res.status(200).json("success")
+
 })
 
 module.exports=router;

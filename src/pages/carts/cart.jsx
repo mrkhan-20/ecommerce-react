@@ -88,26 +88,83 @@ function cart({logout,user}) {
         try{
             const res=await axios.post('http://localhost:3000/checkout',value)
             if (res.status==200) {
-               items.map(async (val)=>{
-                let temp={
-                    itemId:val.product_id,
-                    user:user
-                }
-                try{
-                    const res=await axios.post('http://localhost:3000/removecart',temp)
-                  }
-                  catch(err){
-                    console.log(err);
-                  }
-               })
-               setItems([]);
+                const res = await loadScript(
+                    "https://checkout.razorpay.com/v1/checkout.js"
+                );
+                let sum=0;
+                items.map((v)=>{
+                    const numberStr = v.price.split("$")[1];
+                    sum+=parseInt(numberStr)*parseInt(v.quantity);
+                })
+                const result = await axios.post("http://localhost:3000/checkout/checkoutPayment",{sum});
+                const { amount, id: order_id, currency } = result.data.order;
+                
+                const options = {
+                    key: "rzp_test_VAv2jA9rlvknap", // Enter the Key ID generated from the Dashboard
+                    amount: amount.toString(),
+                    currency: currency,
+                    name: "Ecommerce Corp.",
+                    description: "Test Transaction",
+                    "image": "https://img.freepik.com/premium-vector/abstract-modern-ecommerce-logo-design-colorful-gradient-shopping-bag-logo-template_467913-995.jpg",
+                    order_id: order_id,
+                    handler: async function (response) {
+                        const data = {
+                            orderCreationId: order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpaySignature: response.razorpay_signature,
+                        };
+        
+                        const result = await axios.post("http://localhost:3000/checkout/payment", data);
+        
+                        items.map(async (val)=>{
+                            let temp={
+                                itemId:val.product_id,
+                                user:user
+                            }
+                            try{
+                                const res=await axios.post('http://localhost:3000/removecart',temp)
+                              }
+                              catch(err){
+                                console.log(err);
+                              }
+                        })
+                    setItems([]);
+
+                    },
+                    theme: {
+                        color: "#61dafb",
+                    },
+                };
+        
+                const paymentObject = new window.Razorpay(options);
+                paymentObject.open();
+                paymentObject.on('payment.failed', async function (response){
+                    const result = await axios.post("http://localhost:3000/checkout/delete");
+                    
+                });
+
             }
           }
           catch(err){
             console.log(err);
           }
     }
+    const loadScript = (src) => {
+        return new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = () => {
+            resolve(true);
+          };
+          script.onerror = () => {
+            resolve(false);
+          };
+         document.body.appendChild(script);
+       });
+    };
     
+
     return (
         <>
         <Navbar logout={logout} />
